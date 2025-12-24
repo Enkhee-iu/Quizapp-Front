@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-import { requireUser } from "@/app/lib/auth";
-import { prisma } from "@/app/lib/db";
+import { requireUser } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 

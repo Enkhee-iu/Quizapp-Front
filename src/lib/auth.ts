@@ -1,11 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 
 export async function requireUser(): Promise<string> {
-  const session = await auth();
+  const { userId } = await auth();
 
-  if (!session.userId) {
+  if (!userId) {
     throw new Error("Unauthorized");
   }
 
-  return session.userId;
+  return userId;
 }

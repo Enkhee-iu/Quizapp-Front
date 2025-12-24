@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/app/lib/db";
-import { requireUser } from "@/app/lib/auth";
+import { prisma } from "@/lib/db";
+import { requireUser } from "@/lib/auth";
 
 type Params = {
   params: {
