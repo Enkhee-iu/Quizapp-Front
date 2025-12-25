@@ -37,16 +37,33 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <header className="flex justify-between items-center p-4 gap-4 h-16">
-            <p className="ml-6 text-2xl font-semibold">Quiz App</p>
+            <p
+              className="ml-6 text-2xl font-semibold   bg-gradient-to-r
+      from-pink-400
+      via-[#6c47ff]
+      to-violet-500
+      bg-size-[200%_200%]
+      bg-clip-text text-transparent
+      transition-all duration-300
+      hover:bg-position-[100%_0]"
+            >
+              Quiz App
+            </p>
             <div className=" items-center p-4 gap-4 h-16 flex">
               <SignedOut>
-                <SignInButton />
+                <SignInButton>
+                  <span className="cursor-pointer font-medium text-sm text-[#5b3ce6] sm:text-base transition-colors duration-200 hover:text-[#6c47ff] hover:underline">
+                    Sign In
+                  </span>
+                </SignInButton>
+
                 <SignUpButton>
-                  <button className="bg-[#6c47ff] text-ceramic-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
+                  <button className="bg-[#6c47ff] hover:bg-[#5b3ce6] transition-colors duration-200 text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
                     Sign Up
                   </button>
                 </SignUpButton>
               </SignedOut>
+
               <SignedIn>
                 <UserButton />
               </SignedIn>

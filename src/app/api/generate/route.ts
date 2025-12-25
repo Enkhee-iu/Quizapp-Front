@@ -9,7 +9,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 export async function POST(req: Request) {
   try {
     // 🔐 Auth
-    const userId = requireUser();
+    const userId = await requireUser();
 
     // 📥 Request body
     const { text } = await req.json();
