@@ -2,9 +2,12 @@ import { Input } from "@/components/ui/input";
 import PaperIcon from "../icons/PaperIcon";
 import StarIcon from "../icons/staricon";
 import { Input2 } from "@/components/ui/input2";
+import { ButtonSecondary } from "@/components/ui/btn";
 
 const MainPage = () => {
   return (
+    
+      
     <div className="w-214 h-110.5 border border-solid gap-20 rounded-lg p-7">
       <div className="flex gap-2">
         <StarIcon />
@@ -30,8 +33,12 @@ const MainPage = () => {
           Article Content
         </p>
       </div>
-      <Input2 />
+      <Input2 className="mt-2" />
+      <div className="flex justify-end mt-2">
+        <ButtonSecondary />
+      </div>
     </div>
+   
   );
 };
 export default MainPage;

@@ -36,7 +36,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <header className="flex justify-between items-center p-4 gap-4 h-16">
+          <header className="flex justify-between items-center p-4 gap-4 h-16 border">
             <p
               className="ml-6 text-2xl font-semibold   bg-gradient-to-r
       from-pink-400
