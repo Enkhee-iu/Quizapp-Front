@@ -1,12 +1,6 @@
 import * as React from "react";
-const StarIcon = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={32}
-    height={32}
-    fill="none"
-    {...props}
-  >
+const StarIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={32} height={32} fill="none">
     <path
       stroke="#09090B"
       strokeLinecap="round"

@@ -1,41 +1,44 @@
-"use client"
+"use client";
+import { useState } from "react";
+import SideBarIcon from "../icons/sidebar";
 
+type HistoryItem = {
+  id: string;
+  title: string;
+};
 
-export default function SideLeftBar({
-  onClose,
-}: {
-  onClose: () => void
-}) {
+export default function SideLeftBar({ onClose }: { onClose: () => void }) {
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
+
   return (
-    <aside className="fixed left-[72px] top-0 h-screen w-[260px] border-r border-zinc-200 bg-white">
-      {/* Close button */}
-      <button
-        onClick={onClose}
-        className="p-4 text-zinc-600 hover:text-zinc-900"
-      >
-        ✕ Close
-      </button>
-
-      {/* History */}
-      <div className="px-4 py-3">
+    <aside className="fixed left-5 top-16 h-[calc(100vh-3.5rem)] w-75 border-r border-zinc-200 bg-white">
+      <div className="h-full px-3 py-2 flex flex-col">
+        {/* Header */}
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-medium text-zinc-600">
+          <span className="text-xl font-semibold leading-7 tracking-[-0.025em]">
             History
           </span>
-          <span className="text-zinc-400 text-sm">🕒</span>
+
+          <button
+            onClick={onClose}
+            className="p-2 text-zinc-600 hover:text-zinc-900 cursor-pointer"
+          >
+            <SideBarIcon />
+          </button>
         </div>
 
-        <ul className="space-y-1 overflow-y-auto max-h-[calc(100vh-120px)] pr-1">
-          {historyItems.map((item, index) => (
+        {/* Scroll area */}
+        <ul className="flex-1 overflow-y-auto space-y-1">
+          {historyItems.map((item) => (
             <li
-              key={index}
-              className="cursor-pointer rounded-md px-2 py-2 text-sm text-zinc-800 hover:bg-zinc-100"
+              key={item.id}
+              className="cursor-pointer rounded px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-100"
             >
-              {item}
+              {item.title}
             </li>
           ))}
         </ul>
       </div>
     </aside>
-  )
+  );
 }
