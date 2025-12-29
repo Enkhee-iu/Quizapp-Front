@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Input2 } from "@/components/ui/input2";
 import { ButtonSecondary } from "@/components/ui/btn";
@@ -8,60 +9,102 @@ import { ButtonSecondary } from "@/components/ui/btn";
 import PaperIcon from "../icons/PaperIcon";
 import StarIcon from "../icons/staricon";
 
-const MainPage = () => {
+export default function MainPage() {
+  const router = useRouter();
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleGenerate = async () => {
-    if (!content.trim()) {
-      alert("Article content is required");
+  // 🔥 UI STATE (input ↔ summary)
+  const [mode, setMode] = useState<"input" | "summary">("input");
+
+  /* ===================== GENERATE SUMMARY ===================== */
+  const handleSummarize = async () => {
+    if (!title.trim()) {
+      alert("Article title is required");
       return;
     }
 
     try {
       setLoading(true);
 
-      const res = await fetch("/api/generate", {
+      const res = await fetch("/api/summarize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text: "Artificial Intelligence is transforming the world. It helps automate tasks, improve decision-making, and enable new products.",
+          text: `Write a concise article about: ${title}`,
         }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.message);
 
-      console.log("SUMMARY:", data.summary);
+      setSummary(data.summary);
+      setMode("summary"); // 🔥 content input нуух
     } catch (err) {
-      console.error(err);
-      alert("Gemini error");
+      console.error("SUMMARIZE ERROR:", err);
+      alert("Summarize error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ===================== TAKE QUIZ ===================== */
+  const handleTakeQuiz = async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: summary }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      localStorage.setItem(
+        "currentQuiz",
+        JSON.stringify({
+          title,
+          summary,
+          questions: data.data.questions,
+        })
+      );
+
+      router.push("/quiz");
+    } catch (err) {
+      console.error("QUIZ ERROR:", err);
+      alert("Quiz generate error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl w-full h-110.5 rounded-lg border p-7">
-      {/* Header */}
+    <div className="max-w-4xl w-full rounded-lg border bg-white p-7">
+      {/* ================= HEADER ================= */}
       <div className="flex items-center gap-2">
         <StarIcon />
-        <h3 className="text-2xl font-semibold text-black">
+        <h3 className="text-2xl font-semibold">
           Article Quiz Generator
         </h3>
       </div>
 
-      <p className="mt-2 text-base leading-[1.2] text-[#71717A]">
-        Paste your article below to generate a summarize and quiz question. Your
-        articles will saved in the sidebar for future reference.
+      <p className="mt-2 text-sm text-zinc-500">
+        Paste your article below to generate a summary and then take a quick quiz.
       </p>
 
-      {/* Title */}
-      <div className="mt-5 flex items-center gap-2">
+      {/* ================= TITLE ================= */}
+      <div className="mt-6 flex items-center gap-2">
         <PaperIcon />
-        <p className="text-sm font-semibold text-[#71717A]">Article Title</p>
+        <p className="text-sm font-semibold text-zinc-600">
+          Article Title
+        </p>
       </div>
+
       <Input
         className="mt-2"
         value={title}
@@ -69,26 +112,56 @@ const MainPage = () => {
         placeholder="Enter article title"
       />
 
-      {/* Content */}
-      <div className="mt-5 flex items-center gap-2">
-        <PaperIcon />
-        <p className="text-sm font-semibold text-[#71717A]">Article Content</p>
-      </div>
-      <Input2
-        className="mt-2"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="Paste your article content here..."
-      />
+      {/* ================= ARTICLE CONTENT ================= */}
+       <div className="mt-5 flex items-center gap-2">
+            <PaperIcon />
+            <p className="text-sm font-semibold text-zinc-600">
+              Article Content
+            </p>
+          </div>
+      {mode === "input" && (
+        <>
+         
 
-      {/* Button */}
-      <div className="mt-4 flex justify-end">
-        <ButtonSecondary onClick={handleGenerate} disabled={loading}>
-          {loading ? "Generating..." : "Generate summary"}
-        </ButtonSecondary>
+          <Input2
+            className="mt-2"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Paste your article content here..."
+          />
+        </>
+      )}
+
+      {/* ================= SUMMARY ================= */}
+      {mode === "summary" && summary && (
+        <div className="mt-5 rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3">
+          <p className="text-xs font-semibold text-zinc-500 mb-1">
+            Summary
+          </p>
+          <p className="text-sm text-zinc-700 leading-relaxed whitespace-pre-line">
+            {summary}
+          </p>
+        </div>
+      )}
+
+      {/* ================= ACTION BUTTONS ================= */}
+      <div className="mt-6 flex justify-end gap-3">
+        {mode === "input" && (
+          <ButtonSecondary onClick={handleSummarize} disabled={loading}>
+            {loading ? "Generating..." : "Generate summary"}
+          </ButtonSecondary>
+        )}
+
+        {mode === "summary" && (
+          <>
+           
+
+            <ButtonSecondary onClick={handleTakeQuiz} disabled={loading}>
+             {loading ? "Thinking..." : "Take quiz"} 
+            </ButtonSecondary>
+          </>
+        )}
       </div>
     </div>
   );
-};
-
-export default MainPage;
+}

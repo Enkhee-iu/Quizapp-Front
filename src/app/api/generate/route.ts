@@ -60,7 +60,11 @@ ${text}
 
     const quiz = JSON.parse(cleaned);
 
-    return NextResponse.json(quiz);
+   return NextResponse.json({
+      success: true,
+      message: "Quiz generated successfully",
+      data: quiz,
+    });
   } catch (error) {
     console.error("QUIZ GENERATE ERROR:", error);
     return NextResponse.json(
