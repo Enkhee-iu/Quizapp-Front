@@ -11,7 +11,7 @@ type Question = {
 
 export default function QuizPage() {
   const router = useRouter();
-
+const raw = localStorage.getItem("currentQuiz");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -35,7 +35,8 @@ export default function QuizPage() {
     if (index < questions.length - 1) {
       setIndex((i) => i + 1);
     } else {
-      router.push("/"); // дараа нь result page болгож болно
+      // Finish
+      router.push("/");
     }
   };
 

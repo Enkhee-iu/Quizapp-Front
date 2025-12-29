@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Input2 } from "@/components/ui/input2";
 import { ButtonSecondary } from "@/components/ui/btn";
-
+import HistoryViewer from "../_components/HistoryViewer";
 import PaperIcon from "../icons/PaperIcon";
 import StarIcon from "../icons/staricon";
 
@@ -17,41 +17,52 @@ export default function MainPage() {
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // 🔥 UI STATE (input ↔ summary)
   const [mode, setMode] = useState<"input" | "summary">("input");
 
-  /* ===================== GENERATE SUMMARY ===================== */
-  const handleSummarize = async () => {
-    if (!title.trim()) {
-      alert("Article title is required");
-      return;
-    }
+const handleSummarize = async () => {
+  if (!title.trim()) {
+    alert("Article title is required");
+    return;
+  }
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const res = await fetch("/api/summarize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: `Write a concise article about: ${title}`,
-        }),
-      });
+    const res = await fetch("/api/summarize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: `Write a concise article about: ${title}`,
+      }),
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
 
-      setSummary(data.summary);
-      setMode("summary"); // 🔥 content input нуух
-    } catch (err) {
-      console.error("SUMMARIZE ERROR:", err);
-      alert("Summarize error");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setSummary(data.summary);
+    setMode("summary");
 
-  /* ===================== TAKE QUIZ ===================== */
+    const newItem = {
+      id: crypto.randomUUID(),
+      title: title,
+      summary: data.summary,
+    };
+
+    const prev = JSON.parse(localStorage.getItem("history") || "[]");
+
+    localStorage.setItem(
+      "history",
+      JSON.stringify([newItem, ...prev])
+    );
+
+  } catch (err) {
+    console.error("SUMMARIZE ERROR:", err);
+    alert("Summarize error");
+  } finally {
+    setLoading(false);
+  }
+};
+
   const handleTakeQuiz = async () => {
     try {
       setLoading(true);
@@ -85,7 +96,6 @@ export default function MainPage() {
 
   return (
     <div className="max-w-4xl w-full rounded-lg border bg-white p-7">
-      {/* ================= HEADER ================= */}
       <div className="flex items-center gap-2">
         <StarIcon />
         <h3 className="text-2xl font-semibold">
@@ -97,7 +107,6 @@ export default function MainPage() {
         Paste your article below to generate a summary and then take a quick quiz.
       </p>
 
-      {/* ================= TITLE ================= */}
       <div className="mt-6 flex items-center gap-2">
         <PaperIcon />
         <p className="text-sm font-semibold text-zinc-600">
@@ -112,7 +121,6 @@ export default function MainPage() {
         placeholder="Enter article title"
       />
 
-      {/* ================= ARTICLE CONTENT ================= */}
        <div className="mt-5 flex items-center gap-2">
             <PaperIcon />
             <p className="text-sm font-semibold text-zinc-600">
@@ -132,7 +140,6 @@ export default function MainPage() {
         </>
       )}
 
-      {/* ================= SUMMARY ================= */}
       {mode === "summary" && summary && (
         <div className="mt-5 rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3">
           <p className="text-xs font-semibold text-zinc-500 mb-1">
@@ -144,7 +151,6 @@ export default function MainPage() {
         </div>
       )}
 
-      {/* ================= ACTION BUTTONS ================= */}
       <div className="mt-6 flex justify-end gap-3">
         {mode === "input" && (
           <ButtonSecondary onClick={handleSummarize} disabled={loading}>
@@ -162,6 +168,7 @@ export default function MainPage() {
           </>
         )}
       </div>
+      <HistoryViewer/>
     </div>
   );
 }
