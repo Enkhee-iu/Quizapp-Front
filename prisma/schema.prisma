@@ -1,17 +1,15 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "postgresql" // эсвэл mysql / sqlite
   url      = env("DATABASE_URL")
 }
 
-model Article {
-  id           String   @id @default(uuid())
-  userId       String
-  originalText String
-  summary      String
-  createdAt    DateTime @default(now())
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  createdAt DateTime @default(now())
 }

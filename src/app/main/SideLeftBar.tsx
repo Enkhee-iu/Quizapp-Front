@@ -2,24 +2,52 @@
 
 import { useEffect, useState } from "react";
 import SideBarIcon from "../icons/sidebar";
+import { Question } from "@/types";
 
 type HistoryItem = {
   id: string;
   title: string;
   summary?: string;
-  questions?: any[];
+  questions?: Question[];
 };
 
 export default function SideLeftBar({ onClose }: { onClose: () => void }) {
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
 
   const loadHistory = () => {
-    const raw = localStorage.getItem("history");
-    setHistoryItems(raw ? JSON.parse(raw) : []);
+    if (typeof window === "undefined") return;
+
+    try {
+      const raw = localStorage.getItem("history");
+      if (!raw) {
+        setHistoryItems([]);
+        return;
+      }
+
+      const parsed = JSON.parse(raw) as HistoryItem[];
+      setHistoryItems(parsed);
+    } catch (err) {
+      console.error("Failed to load history", err);
+      setHistoryItems([]);
+    }
   };
 
   useEffect(() => {
-    loadHistory();
+    if (typeof window === "undefined") return;
+
+    let items: HistoryItem[] = [];
+
+    try {
+      const raw = localStorage.getItem("history");
+      if (raw) {
+        const parsed = JSON.parse(raw) as HistoryItem[];
+        items = Array.isArray(parsed) ? parsed : [];
+      }
+    } catch (err) {
+      console.error("Failed to load history", err);
+    }
+
+    setHistoryItems(items);
   }, []);
 
   return (
@@ -27,7 +55,7 @@ export default function SideLeftBar({ onClose }: { onClose: () => void }) {
       <div className="h-full px-3 py-2 flex flex-col">
         <div className="flex justify-between mb-3">
           <span className="text-xl font-semibold">History</span>
-          <button onClick={onClose}>
+          <button className="cursor-pointer" onClick={onClose}>
             <SideBarIcon />
           </button>
         </div>
@@ -38,13 +66,8 @@ export default function SideLeftBar({ onClose }: { onClose: () => void }) {
               key={item.id}
               className="cursor-pointer rounded px-2 py-1 hover:bg-zinc-100"
               onClick={() => {
-                localStorage.setItem(
-                  "selectedHistory",
-                  JSON.stringify(item)
-                );
-                window.dispatchEvent(
-                  new CustomEvent("history-select")
-                );
+                localStorage.setItem("selectedHistory", JSON.stringify(item));
+                window.dispatchEvent(new CustomEvent("history-select"));
               }}
             >
               <div className="font-medium">{item.title}</div>
