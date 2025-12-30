@@ -24,38 +24,25 @@ export default function HistoryViewer() {
   const load = () => {
     const raw = localStorage.getItem("selectedHistory");
     if (raw) {
-      setItem(JSON.parse(raw));
-      localStorage.removeItem("selectedHistory"); // refresh дээр дахиж нээгдэхгүй
+      const parsed = JSON.parse(raw);
+      console.log("VIEWER ITEM 👉", parsed);
+      console.log("VIEWER QUESTIONS 👉", parsed.questions);
+      setItem(parsed);
     }
   };
 
   useEffect(() => {
     load();
     window.addEventListener("history-select", load);
-    return () =>
-      window.removeEventListener("history-select", load);
+    return () => window.removeEventListener("history-select", load);
   }, []);
 
   if (!item) return null;
 
-  const handleTakeQuiz = () => {
-    if (!item.questions || item.questions.length === 0) {
-      alert("No quiz available");
-      return;
-    }
+const handleTakeQuiz = () => {
+  router.push(`/quiz?historyId=${item.id}`);
+};
 
-    // 🔥 QuizPage-д дамжуулах data
-    localStorage.setItem(
-      "currentQuiz",
-      JSON.stringify({
-        title: item.title,
-        questions: item.questions,
-      })
-    );
-
-    setItem(null);
-    router.push("/quiz"); // 👉 QUIZ APP
-  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
@@ -74,7 +61,10 @@ export default function HistoryViewer() {
           </ButtonSecondary>
 
           <button
-            onClick={() => setItem(null)}
+            onClick={() => {
+              setItem(null);
+              localStorage.removeItem("selectedHistory");
+            }}
             className="px-4 py-1.5 rounded bg-zinc-800 text-white"
           >
             Close
