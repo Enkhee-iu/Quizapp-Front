@@ -12,6 +12,7 @@ export async function POST(req: Request) {
 
   const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET!);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let event: any;
 
   try {
@@ -33,6 +34,7 @@ export async function POST(req: Request) {
         email: user.email_addresses[0].email_address,
       },
     });
+    console.log(user.email_addresses[0].email_address);
   }
 
   return new Response("OK");

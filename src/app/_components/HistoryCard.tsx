@@ -14,8 +14,8 @@ type HistoryItem = {
 };
 
 export default function HistoryCard({ item }: { item: HistoryItem }) {
-console.log(item.questions);
-  // 🔥 ЭНЭ Л ХАМГИЙН ЧУХАЛ ФУНКЦ
+  console.log(item.questions);
+
   const openHistory = () => {
     console.log("CARD ITEM 👉", item);
     console.log("CARD QUESTIONS 👉", item.questions);
@@ -26,7 +26,7 @@ console.log(item.questions);
         id: item.id,
         title: item.title,
         summary: item.summary,
-        questions: item.questions, // 🔥 ХЭРВЭЭ ЭНД undefined БОЛ — BACKEND АСУУДАЛ
+        questions: item.questions,
       })
     );
 

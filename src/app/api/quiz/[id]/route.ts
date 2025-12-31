@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 const quizzes: Record<string, any> = {
-  "e729aa13-ca9f-41f6-b73d-d0dfb993089c": {
+  "593d7dbd-dfd9-432f-9ccc-2ac05ca31d90": {
+    // Таны хайж буй ID
     questions: [
       {
         question: "What does FIFA stand for?",
@@ -13,34 +14,29 @@ const quizzes: Record<string, any> = {
         ],
         correctIndex: 1,
       },
-      {
-        question: "Where is FIFA headquartered?",
-        options: ["Paris", "Zurich", "London", "Rome"],
-        correctIndex: 1,
-      },
     ],
   },
 };
 
-export async function GET(req: Request) {
-  // 🔥 URL-ээс ID-г шууд гаргаж авна
-  const url = new URL(req.url);
-  const id = url.pathname.split("/").pop();
+// ⚠️ params-ийг заавал авна
 
-  console.log("API QUIZ ID (URL) 👉", id);
+// ... (quizzes object хэвээрээ байна)
 
-  if (!id) {
-    return NextResponse.json(
-      { error: "Missing quiz id" },
-      { status: 400 }
-    );
-  }
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> } // 1. Энд Promise гэж тодорхойлно
+) {
+  // 2. params-ийг await хийж авна
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
+
+  console.log("WORKING API QUIZ ID ", id);
 
   const quiz = quizzes[id];
 
   if (!quiz) {
     return NextResponse.json(
-      { error: "Quiz not found" },
+      { error: "Quiz not found", searchedId: id },
       { status: 404 }
     );
   }

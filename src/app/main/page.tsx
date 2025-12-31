@@ -25,6 +25,11 @@ export default function MainPage() {
       return;
     }
 
+    if (!content.trim()) {
+      alert("Article content is required");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -32,7 +37,8 @@ export default function MainPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text: `Write a concise article about: ${title}`,
+          title,
+          content,
         }),
       });
 
@@ -44,12 +50,11 @@ export default function MainPage() {
 
       const newItem = {
         id: crypto.randomUUID(),
-        title: title,
+        title,
         summary: data.summary,
       };
 
       const prev = JSON.parse(localStorage.getItem("history") || "[]");
-
       localStorage.setItem("history", JSON.stringify([newItem, ...prev]));
     } catch (err) {
       console.error("SUMMARIZE ERROR:", err);

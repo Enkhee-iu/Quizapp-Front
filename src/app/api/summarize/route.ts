@@ -7,11 +7,11 @@ const client = new OpenAI({
 
 export async function POST(req: Request) {
   try {
-    const { text } = await req.json();
+    const { title, content } = await req.json();
 
-    if (!text) {
+    if (!title || !content) {
       return NextResponse.json(
-        { success: false, message: "Text is required" },
+        { success: false, message: "Title and content are required" },
         { status: 400 }
       );
     }
@@ -21,11 +21,20 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "system",
-          content: "Summarize the following article in 3-5 sentences.",
+          content:
+            "You are a helpful assistant that summarizes articles clearly and concisely.",
         },
         {
           role: "user",
-          content: text,
+          content: `
+Article title:
+${title}
+
+Article content:
+${content}
+
+Please summarize the article in 3–5 sentences.
+`,
         },
       ],
       temperature: 0.3,
