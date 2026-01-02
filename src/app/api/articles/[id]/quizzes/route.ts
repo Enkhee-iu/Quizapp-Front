@@ -1,75 +1,81 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server"; // NextRequest ашиглах нь тохиромжтой
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
-type Params = {
-  params: { id: string };
+// Next.js 15 дээр params нь Promise байна
+type RouteContext = {
+  params: Promise<{ id: string }>;
 };
 
-export async function POST(req: Request, { params }: Params) {
+export async function POST(req: NextRequest, context: RouteContext) {
   try {
-    // 1️⃣ Auth
+    // 1️⃣ Params-ийг await хийж авна (Next.js 15-ын гол шаардлага)
+    const { id: articleId } = await context.params;
+
+    // 2️⃣ Auth
     const userId = await requireUser();
 
-    // 2️⃣ Article шалгах
+    // 3️⃣ Article шалгах
     const article = await prisma.article.findFirst({
       where: {
-        id: params.id,
-        userId,
+        id: articleId,
+        userId: userId,
       },
       select: {
         summary: true,
       },
     });
 
-    if (!article) {
-      return NextResponse.json({ error: "Article not found" }, { status: 404 });
+    if (!article || !article.summary) {
+      return NextResponse.json({ error: "Article not found or summary empty" }, { status: 404 });
     }
 
-    // 3️⃣ Gemini model
+    // 4️⃣ Gemini model тохируулах
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
+      generationConfig: { responseMimeType: "application/json" } // Gemini-д JSON буцаахыг хүчээр зааж өгөх
     });
 
-    // 4️⃣ PROMPT (маш энгийн)
+    // 5️⃣ PROMPT
     const prompt = `
-Create 3 multiple choice questions from this summary.
-Return ONLY JSON like this:
+      Create 3 multiple choice questions from this summary.
+      Return ONLY a JSON object with this structure:
+      {
+        "questions": [
+          {
+            "question": "string",
+            "options": ["string", "string", "string", "string"],
+            "correct": "string"
+          }
+        ]
+      }
+      Summary: ${article.summary}
+    `;
 
-{
-  "questions": [
-    {
-      "question": "text",
-      "options": ["A","B","C","D"],
-      "correct": "A"
-    }
-  ]
-}
-
-Summary:
-${article.summary}
-`;
-
-    // 5️⃣ AI дуудна
+    // 6️⃣ AI-аас хариу авах
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    console.log("AI RAW RESPONSE:", text);
-    // 6️⃣ JSON цэвэрлэж parse хийнэ
-    const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
 
-    const quiz = JSON.parse(json);
+    // 7️⃣ JSON Parse хийх (найдвартай арга)
+    try {
+      // Заримдаа AI хариунд ```json ... ``` нэмчихдэг тул цэвэрлэх
+      const cleanJson = text.replace(/```json|```/g, "").trim();
+      const quiz = JSON.parse(cleanJson);
 
-    // 7️⃣ Түр хариу (DB-д хадгалахгүй)
-    return NextResponse.json({
-      message: "AI quiz generated",
-      quiz,
-    });
+      return NextResponse.json({
+        message: "AI quiz generated",
+        quiz,
+      });
+    } catch (parseError) {
+      console.error("JSON PARSE ERROR:", text);
+      return NextResponse.json({ error: "Invalid AI response format" }, { status: 500 });
+    }
+
   } catch (error) {
     console.error("QUIZ AI ERROR:", error);
-
     return NextResponse.json(
       { error: "AI generation failed" },
       { status: 500 }
