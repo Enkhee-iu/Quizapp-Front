@@ -30,30 +30,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // 🔐 Build үед алдаа гарахаас сэргийлж түлхүүрийг энд авна
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-  // 🛡️ ХАМГААЛАЛТ: Хэрэв түлхүүр байхгүй бол Build-ийг алдаагүй үргэлжлүүлнэ
-  if (!publishableKey) {
-    console.warn("Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY. Check your .env file.");
-  }
-
   return (
-    <ClerkProvider publishableKey={publishableKey}>
+    // publishableKey-г заавал ийм байдлаар дамжуулж өгнө. 
+    // Хэрэв байхгүй бол хоосон текст биш undefined байх ёстой.
+    <ClerkProvider publishableKey={publishableKey || ""}>
       <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <header className="flex justify-between items-center p-4 gap-4 h-16 border">
-            <p
-              className="ml-6 text-2xl font-semibold bg-gradient-to-r
-                from-pink-400
-                via-[#6c47ff]
-                to-violet-500
-                bg-size-[200%_200%]
-                bg-clip-text text-transparent
-                transition-all duration-300
-                hover:bg-position-[100%_0]"
-            >
+            <p className="ml-6 text-2xl font-semibold bg-gradient-to-r from-pink-400 via-[#6c47ff] to-violet-500 bg-size-[200%_200%] bg-clip-text text-transparent transition-all duration-300 hover:bg-position-[100%_0]">
               Quiz App
             </p>
             <div className="items-center p-4 gap-4 h-16 flex">
@@ -63,14 +50,12 @@ export default function RootLayout({
                     Sign In
                   </span>
                 </SignInButton>
-
                 <SignUpButton mode="modal">
                   <button className="bg-[#6c47ff] hover:bg-[#5b3ce6] transition-colors duration-200 text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
                     Sign Up
                   </button>
                 </SignUpButton>
               </SignedOut>
-
               <SignedIn>
                 <UserButton afterSignOutUrl="/" />
               </SignedIn>
