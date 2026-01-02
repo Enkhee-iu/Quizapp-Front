@@ -30,11 +30,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // 🔐 Build үед алдаа гарахаас сэргийлж түлхүүрийг энд авна
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
+  // 🛡️ ХАМГААЛАЛТ: Хэрэв түлхүүр байхгүй бол Build-ийг алдаагүй үргэлжлүүлнэ
+  if (!publishableKey) {
+    console.warn("Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY. Check your .env file.");
+  }
+
   return (
-    // publishableKey-г заавал ийм байдлаар дамжуулж өгнө
     <ClerkProvider publishableKey={publishableKey}>
       <html lang="en">
         <body
