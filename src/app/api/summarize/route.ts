@@ -1,11 +1,22 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
-
 export async function POST(req: Request) {
+  // 1. API Key байгаа эсэхийг POST дотор шалгана. 
+  // Энэ нь build-ийг алдаагүй давахад тусална.
+  if (!process.env.OPENAI_API_KEY) {
+    console.error("OPENAI_API_KEY is missing");
+    return NextResponse.json(
+      { success: false, message: "Server configuration error" },
+      { status: 500 }
+    );
+  }
+
+  // 2. Client-ийг энд үүсгэнэ
+  const client = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+
   try {
     const { title, content } = await req.json();
 
@@ -17,7 +28,8 @@ export async function POST(req: Request) {
     }
 
     const completion = await client.chat.completions.create({
-      model: "gpt-4.1-mini",
+      // 3. Моделийн нэрийг зөв болгож засав (gpt-4o-mini)
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -27,14 +39,10 @@ export async function POST(req: Request) {
         {
           role: "user",
           content: `
-Article title:
-${title}
-
-Article content:
-${content}
-
-Please summarize the article in 3–5 sentences.
-`,
+            Article title: ${title}
+            Article content: ${content}
+            Please summarize the article in 3–5 sentences.
+          `,
         },
       ],
       temperature: 0.3,
@@ -46,10 +54,10 @@ Please summarize the article in 3–5 sentences.
       success: true,
       summary,
     });
-  } catch (err) {
-    console.error("SUMMARIZE ERROR:", err);
+  } catch (err: any) {
+    console.error("SUMMARIZE ERROR:", err.message);
     return NextResponse.json(
-      { success: false, message: "Failed to summarize" },
+      { success: false, message: "Failed to summarize: " + err.message },
       { status: 500 }
     );
   }
