@@ -1,23 +1,25 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 
-type Params = {
-  params: {
-    id: string;
-  };
-};
+// 1️⃣ Next.js 15-д params нь Promise байх ёстой
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
 
-export async function GET(req: Request, { params }: Params) {
+export async function GET(req: NextRequest, context: RouteContext) {
   try {
+    // 2️⃣ params-ийг await хийж утгыг нь гаргаж авна
+    const { id: articleId } = await context.params;
+
     // 🔐 Auth
     const userId = await requireUser();
 
     // 📦 DB query
     const article = await prisma.article.findFirst({
       where: {
-        id: params.id,
-        userId, // 🔒 user-owned only
+        id: articleId,
+        userId: userId, // 🔒 Зөвхөн тухайн хэрэглэгчийнх
       },
       select: {
         id: true,
@@ -36,6 +38,6 @@ export async function GET(req: Request, { params }: Params) {
   } catch (error: unknown) {
     console.error("GET /api/articles/:id ERROR:", error);
 
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized or server error" }, { status: 401 });
   }
 }

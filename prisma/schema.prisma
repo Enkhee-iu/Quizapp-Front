@@ -8,9 +8,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Article {
+  id           String   @id @default(cuid())
+  userId       String
+  originalText String
+  summary      String
+  createdAt    DateTime @default(now())
+  // Хэрэв User-тэй холбохыг хүсвэл доорх мөрийг нэмж болно:
+  // user      User     @relation(fields: [userId], references: [clerkId])
+}
+
+// Хэрэв та Quiz үүсгэж байгаа бол Quiz модел бас хэрэг болно
+model Quiz {
   id        String   @id @default(cuid())
-  clerkId   String   @unique
-  email     String   @unique
+  articleId String
+  data      Json     // AI-аас ирсэн асуултуудыг хадгалах
   createdAt DateTime @default(now())
 }
