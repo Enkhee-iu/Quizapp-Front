@@ -20,8 +20,9 @@ type HistoryItem = {
 export default function HistoryViewer() {
   const router = useRouter();
   const [item, setItem] = useState<HistoryItem | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const quizId = ""; // quiz deer darah uyd avna
+  // const quizId = ""; // quiz deer darah uyd avna
 
   const load = () => {
     try {
@@ -46,20 +47,44 @@ export default function HistoryViewer() {
 
   if (!item) return null;
 
-  // HistoryViewer.tsx доторх handleTakeQuiz функц
   const handleTakeQuiz = async () => {
+    setIsLoading(true);
+
+    if (item.questions && item.questions.length > 0) {
+      localStorage.setItem(
+        "currentQuiz",
+        JSON.stringify({ questions: item.questions })
+      );
+      router.push("/quiz");
+      return;
+    }
+
     try {
-      const res = await fetch(`/api/quiz/${item.id}`); // item.id-г ашиглана
+      const res = await fetch("/api/quiz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: item.title,
+          content: item.summary, // Backend 'content' гэж хүлээж авч байгаа
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Server Error:", errorData);
+        throw new Error("Сервер алдаа заалаа");
+      }
+
       const data = await res.json();
+      // data нь одоо шууд { questions: [...] } ирнэ
 
-      if (!res.ok) throw new Error("Алдаа гарлаа");
-
-      // Нэрийг "currentQuiz" болгож хадгалах (QuizPage-тэй ижил)
       localStorage.setItem("currentQuiz", JSON.stringify(data));
-
       router.push("/quiz");
     } catch (err) {
-      console.error("ERROR:", err);
+      console.error("Алдаа:", err);
+      alert("AI асуулт бэлдэж чадсангүй.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -80,11 +105,24 @@ export default function HistoryViewer() {
         )}
 
         <div className="mt-4 flex justify-between">
-          <ButtonSecondary onClick={handleTakeQuiz}>Take quiz</ButtonSecondary>
+          <ButtonSecondary
+            className="cursor-pointer"
+            onClick={handleTakeQuiz}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Loading...
+              </span>
+            ) : (
+              "Take quiz"
+            )}
+          </ButtonSecondary>
 
           <button
             onClick={handleClose}
-            className="px-4 py-1.5 rounded bg-zinc-800 text-white"
+            className="px-4 py-1.5 rounded cursor-pointer bg-zinc-800 text-white"
           >
             Close
           </button>
