@@ -36,7 +36,8 @@ export default function RootLayout({
   return (
     // publishableKey-г заавал ийм байдлаар дамжуулж өгнө. 
     // Хэрэв байхгүй бол хоосон текст биш undefined байх ёстой.
-    <ClerkProvider publishableKey={publishableKey || ""}>
+    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+      
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <header className="flex justify-between items-center p-4 gap-4 h-16 border">
