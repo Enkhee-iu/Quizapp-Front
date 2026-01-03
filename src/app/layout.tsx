@@ -101,6 +101,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  console.log("Check Key:", process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
   // .env файлаас key-г уншиж авна
   const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
